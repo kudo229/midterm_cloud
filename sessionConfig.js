@@ -1,15 +1,19 @@
 const session = require('express-session');
-const MongoStore = require('connect-mongo');
+const ConnectMongo = require('connect-mongo');
 require('dotenv').config();
 
-// Cấu hình Session Stateless: Lưu trực tiếp vào Cloud Atlas qua kết nối Ghi
+// Xử lý linh hoạt cho mọi phiên bản connect-mongo (CJS / ESM interop)
+const MongoStore = ConnectMongo.create
+  ? ConnectMongo
+  : ConnectMongo.default || ConnectMongo;
+
 const sessionMiddleware = session({
   secret: process.env.SESSION_SECRET || 'secret_23IT184',
   resave: false,
   saveUninitialized: false,
   store: MongoStore.create({
     mongoUrl: process.env.MONGODB_WRITE_URI,
-    collectionName: 'sessions', // Tự động tạo collection 'sessions' trên Atlas
+    collectionName: 'sessions',
     ttl: 24 * 60 * 60, // 1 ngày
   }),
   cookie: {
